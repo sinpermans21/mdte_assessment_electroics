@@ -1,0 +1,61 @@
+# LED location for the 7-segment display
+
+# UPDATED: All pixel ranges have been cut in half
+SEGMENTS = {
+    "a": list(range(0, 3)),    # Was 0-6 (3 pixels)
+    "b": list(range(3, 7)),    # Was 6-14 (4 pixels)
+    "c": list(range(7, 11)),   # Was 14-22 (4 pixels)
+    "d": list(range(11, 14)),  # Was 22-28 (3 pixels)
+    "e": list(range(14, 18)),  # Was 28-36 (4 pixels)
+    "f": list(range(18, 22)),  # Was 36-44 (4 pixels)
+    "g": list(range(22, 25)),  # Was 44-50 (3 pixels)
+}
+
+DIGITS = {
+    0: ["a", "b", "c", "d", "e", "f"],
+    1: ["b", "c"],
+    2: ["a", "f", "g", "c", "d"],
+    3: ["a", "b", "c", "d", "g"],
+    4: ["b", "c", "e", "g"],
+    5: ["a", "b", "g", "e", "d"],
+    6: ["a", "b", "d", "e", "f", "g"],
+    7: ["b", "c", "d"],
+    8: ["a", "b", "c", "d", "e", "f", "g"],     
+    9: ["a", "b", "c", "d", "e", "g"],
+}
+
+def clear(pixels):
+    # Turn all LEDs off.
+    for i in range(len(pixels)):
+        pixels[i] = (0, 0, 0)
+
+def draw_segment(pixels, segment, color):
+    # Draw a single segment.
+    for i in SEGMENTS[segment]:
+        if i < len(pixels):
+            pixels[i] = color
+
+def draw_digit(pixels, digit, color=(255, 255, 255), offset=0):
+    # Draw a single digit starting at an offset.
+    if digit not in DIGITS:
+        return
+    for seg in DIGITS[digit]:
+        for i in SEGMENTS[seg]:
+            if (offset + i) < len(pixels):
+                pixels[offset + i] = color
+
+# UPDATED: Changed default digit_spacing from 50 to 25
+def draw_number(pixels, number, color=(255, 255, 255), digit_spacing=25):
+    # Clear old pixels first so digits don't bleed into each other
+    clear(pixels)
+    
+    # Draw multi-digit numbers like "12", "08", etc.
+    for index, digit in enumerate(str(number)):
+        try:
+            digit_int = int(digit)
+            draw_digit(pixels, digit_int, color=color, offset=index * digit_spacing)
+        except ValueError:
+            pass 
+            
+    # Push the changes to the physical NeoPixel strip!
+    pixels.show()
